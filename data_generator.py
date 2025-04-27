@@ -14,5 +14,5 @@ def generate_sensor_data():
 if __name__ == "__main__":
     while True:
         print(generate_sensor_data())
-        time.sleep(1)
+        time.sleep(100)
  
