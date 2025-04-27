@@ -1,0 +1,112 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Structural Health Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            padding: 20px;
+        }
+        #statusBox {
+            font-size: 24px;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="text-center mb-4">🛠️ Structural Health Monitoring Dashboard</h1>
+
+    <div class="container">
+        <div id="statusBox" class="mb-4 bg-success">Loading Status...</div>
+
+        <canvas id="sensorChart"></canvas>
+    </div>
+
+    <script>
+        let ctx = document.getElementById('sensorChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Vibration',
+                        borderColor: 'blue',
+                        data: [],
+                        fill: false,
+                    },
+                    {
+                        label: 'Strain',
+                        borderColor: 'orange',
+                        data: [],
+                        fill: false,
+                    },
+                    {
+                        label: 'Temperature',
+                        borderColor: 'red',
+                        data: [],
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: { display: true, text: 'Time' }
+                    },
+                    y: {
+                        display: true,
+                        title: { display: true, text: 'Sensor Values' }
+                    }
+                }
+            }
+        });
+
+        function updateData() {
+            fetch('/sensor-data')
+                .then(response => response.json())
+                .then(data => {
+                    let now = new Date().toLocaleTimeString();
+                    chart.data.labels.push(now);
+                    chart.data.datasets[0].data.push(data.vibration);
+                    chart.data.datasets[1].data.push(data.strain);
+                    chart.data.datasets[2].data.push(data.temperature);
+
+                    if (chart.data.labels.length > 10) {
+                        chart.data.labels.shift();
+                        chart.data.datasets.forEach(dataset => dataset.data.shift());
+                    }
+                    chart.update();
+
+                    // Update Status Box
+                    const statusBox = document.getElementById('statusBox');
+                    if (data.status === "Safe") {
+                        statusBox.className = "mb-4 bg-success";
+                        statusBox.textContent = "✅ Structure Safe";
+                    } else if (data.status === "Warning") {
+                        statusBox.className = "mb-4 bg-warning";
+                        statusBox.textContent = "⚠️ Structure Warning";
+                    } else {
+                        statusBox.className = "mb-4 bg-danger";
+                        statusBox.textContent = "🚨 Critical Issue Detected!";
+                        alert('🚨 Critical structural damage detected!');
+                    }
+                });
+        }
+
+        setInterval(updateData, 2000); // Fetch data every 2 seconds
+    </script>
+
+</body>
+</html>
