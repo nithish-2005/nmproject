@@ -45,9 +45,9 @@ def sensor_data():
 @app.route('/send-email')
 def send_email():
     try:
-        email_sender = 'your_email@gmail.com'  # Change this
-        email_password = 'your_app_password'   # Change this
-        email_receiver = 'receiver_email@gmail.com'  # Change this
+        email_sender = 'nithnithish500@gmail.com'  # Change this
+        email_password = 'wcheugpbtbuthrfc'   # Change this
+        email_receiver = 'nithish2005.vnb@gmail.com'  # Change this
 
         subject = '🚨 Critical Structural Health Alert!'
         body = f'''
