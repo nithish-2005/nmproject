@@ -5,30 +5,21 @@
     <meta charset="UTF-8">
     <title>Structural Health Monitoring Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            padding: 20px;
-        }
-        #statusBox {
-            font-size: 24px;
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="bg-light">
 
-    <h1 class="text-center mb-4">🛠️ Structural Health Monitoring Dashboard</h1>
+    <div class="container py-4">
+        <h1 class="text-center mb-4 fw-bold">🛠️ Structural Health Monitoring</h1>
 
-    <div class="container">
-        <div id="statusBox" class="mb-4 bg-success">Loading Status...</div>
+        <div id="statusBox" class="text-center p-4 mb-4 rounded shadow">Loading Status...</div>
 
-        <canvas id="sensorChart"></canvas>
+        <canvas id="sensorChart" class="bg-white p-3 rounded shadow"></canvas>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-primary" onclick="downloadPDF()">Download Report</button>
+        </div>
     </div>
 
     <script>
@@ -38,37 +29,18 @@
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'Vibration',
-                        borderColor: 'blue',
-                        data: [],
-                        fill: false,
-                    },
-                    {
-                        label: 'Strain',
-                        borderColor: 'orange',
-                        data: [],
-                        fill: false,
-                    },
-                    {
-                        label: 'Temperature',
-                        borderColor: 'red',
-                        data: [],
-                        fill: false,
-                    }
+                    { label: 'Vibration', borderColor: 'blue', data: [], fill: false },
+                    { label: 'Strain', borderColor: 'orange', data: [], fill: false },
+                    { label: 'Temperature', borderColor: 'red', data: [], fill: false },
+                    { label: 'Humidity', borderColor: 'purple', data: [], fill: false },
+                    { label: 'Pressure', borderColor: 'green', data: [], fill: false }
                 ]
             },
             options: {
                 responsive: true,
                 scales: {
-                    x: {
-                        display: true,
-                        title: { display: true, text: 'Time' }
-                    },
-                    y: {
-                        display: true,
-                        title: { display: true, text: 'Sensor Values' }
-                    }
+                    x: { title: { display: true, text: 'Time' }},
+                    y: { title: { display: true, text: 'Sensor Values' }}
                 }
             }
         });
@@ -82,6 +54,8 @@
                     chart.data.datasets[0].data.push(data.vibration);
                     chart.data.datasets[1].data.push(data.strain);
                     chart.data.datasets[2].data.push(data.temperature);
+                    chart.data.datasets[3].data.push(data.humidity);
+                    chart.data.datasets[4].data.push(data.pressure);
 
                     if (chart.data.labels.length > 10) {
                         chart.data.labels.shift();
@@ -89,23 +63,41 @@
                     }
                     chart.update();
 
-                    // Update Status Box
                     const statusBox = document.getElementById('statusBox');
                     if (data.status === "Safe") {
-                        statusBox.className = "mb-4 bg-success";
+                        statusBox.className = "text-center p-4 mb-4 rounded shadow bg-success text-white";
                         statusBox.textContent = "✅ Structure Safe";
                     } else if (data.status === "Warning") {
-                        statusBox.className = "mb-4 bg-warning";
+                        statusBox.className = "text-center p-4 mb-4 rounded shadow bg-warning text-dark";
                         statusBox.textContent = "⚠️ Structure Warning";
                     } else {
-                        statusBox.className = "mb-4 bg-danger";
+                        statusBox.className = "text-center p-4 mb-4 rounded shadow bg-danger text-white";
                         statusBox.textContent = "🚨 Critical Issue Detected!";
+                        sendEmailAlert(); // Critical alert triggers email
                         alert('🚨 Critical structural damage detected!');
                     }
                 });
         }
 
-        setInterval(updateData, 2000); // Fetch data every 2 seconds
+        function sendEmailAlert() {
+            fetch('/send-email'); // Calls backend endpoint
+        }
+
+        function downloadPDF() {
+            fetch('/download-pdf')
+                .then(response => response.blob())
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = "Structural_Report.pdf";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                });
+        }
+
+        setInterval(updateData, 2000);
     </script>
 
 </body>
