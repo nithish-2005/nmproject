@@ -46,7 +46,7 @@ def sensor_data():
 def send_email():
     try:
         email_sender = 'nithnithish500@gmail.com'  # Change this
-        email_password = 'wcheugpbtbuthrfc'   # Change this
+        email_password = 'wcheugpbtbut hrfc'   # Change this
         email_receiver = 'nithish2005.vnb@gmail.com'  # Change this
 
         subject = '🚨 Critical Structural Health Alert!'
